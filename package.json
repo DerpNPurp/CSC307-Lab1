@@ -220,7 +220,8 @@
   "description": ""
   ,
   "workspaces": [
-    "packages/react-frontend"
+    "packages/react-frontend",
+    "packages/express-backend"
   ]
 }
 

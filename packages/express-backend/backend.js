@@ -60,17 +60,14 @@ app.get("/users", (req, res) => {
   const job = req.query.job;
 
   if (name && job) {
-    // Find users by both name and job
     let result = findUserByNameAndJob(name, job);
     result = { users_list: result };
     res.send(result);
   } else if (name) {
-    // Find users by name only
     let result = findUserByName(name);
     result = { users_list: result };
     res.send(result);
   } else {
-    // Return all users if no filters are provided
     res.send(users);
   }
 });
@@ -81,7 +78,7 @@ app.get("/users", (req, res) => {
 
   //find user by ID
   app.get("/users/:id", (req, res) => {
-    const id = req.params["id"]; //or req.params.id
+    const id = req.params["id"]; 
     let result = findUserById(id);
     if (result === undefined) {
       res.status(404).send("Resource not found.");
@@ -102,19 +99,14 @@ app.get("/users", (req, res) => {
   });
 
 
-
-
-// Helper function to delete a user by ID
 const deleteUserById = (id) => {
   const index = users["users_list"].findIndex((user) => user.id === id);
   if (index !== -1) {
-    users["users_list"].splice(index, 1); // Remove user at index
+    users["users_list"].splice(index, 1); 
     return true;
   }
   return false;
 };
-
-// DELETE /users/:id route to remove a user by ID
 app.delete("/users/:id", (req, res) => {
   const id = req.params.id;
   const success = deleteUserById(id);

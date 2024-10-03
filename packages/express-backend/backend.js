@@ -43,14 +43,43 @@ app.get("/", (req, res) => {
 });
 
 const findUserByName = (name) => {
-    return users["users_list"].filter(
-      (user) => user["name"] === name
-    );
-  };
+  return users["users_list"].filter(
+    (user) => user["name"] === name
+  );
+};
+
+const findUserByNameAndJob = (name,job) => {
+  return users["users_list"].filter(
+    (user) => (user["name"] === name && user ["job"] === job)
+  );
+};
+
+//Find user by name and job
+app.get("/users", (req, res) => {
+  const name = req.query.name;
+  const job = req.query.job;
+
+  if (name && job) {
+    // Find users by both name and job
+    let result = findUserByNameAndJob(name, job);
+    result = { users_list: result };
+    res.send(result);
+  } else if (name) {
+    // Find users by name only
+    let result = findUserByName(name);
+    result = { users_list: result };
+    res.send(result);
+  } else {
+    // Return all users if no filters are provided
+    res.send(users);
+  }
+});
   
   const findUserById = (id) =>
     users["users_list"].find((user) => user["id"] === id);
   
+
+  //find user by ID
   app.get("/users/:id", (req, res) => {
     const id = req.params["id"]; //or req.params.id
     let result = findUserById(id);
@@ -60,6 +89,43 @@ const findUserByName = (name) => {
       res.send(result);
     }
   });
+
+  const addUser = (user) => {
+    users["users_list"].push(user);
+    return user;
+  };
+  
+  app.post("/users", (req, res) => {
+    const userToAdd = req.body;
+    addUser(userToAdd);
+    res.send();
+  });
+
+
+
+
+// Helper function to delete a user by ID
+const deleteUserById = (id) => {
+  const index = users["users_list"].findIndex((user) => user.id === id);
+  if (index !== -1) {
+    users["users_list"].splice(index, 1); // Remove user at index
+    return true;
+  }
+  return false;
+};
+
+// DELETE /users/:id route to remove a user by ID
+app.delete("/users/:id", (req, res) => {
+  const id = req.params.id;
+  const success = deleteUserById(id);
+
+  if (success) {
+    res.status(200).send(`User with ID ${id} has been deleted.`);
+  } else {
+    res.status(404).send("Resource not found.");
+  }
+});
+
 
 
 

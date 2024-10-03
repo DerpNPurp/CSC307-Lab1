@@ -93,11 +93,16 @@ app.get("/users", (req, res) => {
     users["users_list"].push(user);
     return user;
   };
+
+  function generateRandomID(){
+    return Math.random().toString(36).slice(2, 8); 
+  }
   
   app.post("/users", (req, res) => {
     const userToAdd = req.body;
+    userToAdd.id = generateRandomID();
     addUser(userToAdd);
-    res.send();
+    res.status(201).send(userToAdd);
   });
 
 
@@ -114,7 +119,7 @@ app.delete("/users/:id", (req, res) => {
   const success = deleteUserById(id);
 
   if (success) {
-    res.status(200).send(`User with ID ${id} has been deleted.`);
+    res.status(204).send(`User with ID ${id} has been deleted.`);
   } else {
     res.status(404).send("Resource not found.");
   }

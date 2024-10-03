@@ -57,7 +57,15 @@ import Form from "./Form";
 
     function updateList(person) { 
       postUser(person)
-        .then(() => setCharacters([...characters, person]))
+        .then((res) => {
+          if(res.status == 201){
+            return res.json();
+          }else {
+            throw new Error("Failed to create user");
+          }
+          
+        })
+        .then((newPerson) => setCharacters([...characters, newPerson]))
         .catch((error) => {
           console.log(error);
         })
@@ -74,11 +82,25 @@ import Form from "./Form";
     ]);
   
     function removeOneCharacter(index) {
-      const updated = characters.filter((character, i) => {
-        return i !== index;
-      });
-      setCharacters(updated);
+      const userId = characters[index].id;  // Get the ID of the user to delete
+    
+      fetch(`http://localhost:8000/users/${userId}`, {
+        method: 'DELETE',
+      })
+        .then((res) => {
+          if (res.status === 204) {
+            
+            const updated = characters.filter((character, i) => i !== index);
+            setCharacters(updated);
+          } else {
+            throw new Error('Failed to delete user');
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
+    
 
     return (
         <div className="container">

@@ -140,6 +140,7 @@
     "loose-envify": "^1.4.0",
     "lru-cache": "^5.1.1",
     "minimatch": "^3.1.2",
+    "mongoose": "^8.7.1",
     "ms": "^2.1.3",
     "nanoid": "^3.3.7",
     "natural-compare": "^1.4.0",
@@ -216,12 +217,9 @@
     "yallist": "^3.1.1",
     "yocto-queue": "^0.1.0"
   },
-  "devDependencies": {},
-  "description": ""
-  ,
+  "description": "",
   "workspaces": [
     "packages/react-frontend",
     "packages/express-backend"
   ]
 }
-

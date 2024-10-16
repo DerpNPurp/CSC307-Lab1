@@ -1,41 +1,25 @@
 // backend.js
 import express from "express";
 import cors from "cors";
+import userService from "./user-services.js";
 
 const app = express();
 const port = 8000;
 
+//List of status
+// 200 - OK: The request was successful.
+// 201 - Created: A new resource was successfully created.
+// 204 - No Content: The request was successful, but there is no content to return.
+// 400 - Bad Request: The server could not understand the request due to invalid syntax.
+// 401 - Unauthorized: The request requires user authentication.
+// 403 - Forbidden: The server understood the request, but it refuses to authorize it.
+// 404 - Not Found: The server can't find the requested resource.
+// 500 - Internal Server Error: The server encountered a situation it doesn't know how to handle.
+// 502 - Bad Gateway: The server was acting as a gateway or proxy and received an invalid response.
+// 503 - Service Unavailable: The server is not ready to handle the request.
 
 
-const users = {
-    users_list: [
-      {
-        id: "xyz789",
-        name: "Charlie",
-        job: "Janitor"
-      },
-      {
-        id: "abc123",
-        name: "Mac",
-        job: "Bouncer"
-      },
-      {
-        id: "ppp222",
-        name: "Mac",
-        job: "Professor"
-      },
-      {
-        id: "yat999",
-        name: "Dee",
-        job: "Aspring actress"
-      },
-      {
-        id: "zap555",
-        name: "Dennis",
-        job: "Bartender"
-      }
-    ]
-  };
+
 
 app.use(cors());
 app.use(express.json());
@@ -44,88 +28,67 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-const findUserByName = (name) => {
-  return users["users_list"].filter(
-    (user) => user["name"] === name
-  );
-};
 
-const findUserByNameAndJob = (name,job) => {
-  return users["users_list"].filter(
-    (user) => (user["name"] === name && user ["job"] === job)
-  );
-};
+// get http://localhost:8000/users?id=
+app.get("/users/:id", (req, res) => {
+  const id = req.params.id;
+  userService.findUserById(id)
+    .then((user) => {
+      if (user) {
+        res.send(user);
+      } else {
+        res.status(404).send("Resource not found.");
+      }
+    })
+    .catch((error) => res.status(500).send(error));
+});
 
-//Find user by name and job
+// get http://localhost:8000/users?job=idk
 app.get("/users", (req, res) => {
-  const name = req.query.name;
-  const job = req.query.job;
+  const { name, job } = req.query;
 
-  if (name && job) {
-    let result = findUserByNameAndJob(name, job);
-    result = { users_list: result };
-    res.send(result);
-  } else if (name) {
-    let result = findUserByName(name);
-    result = { users_list: result };
-    res.send(result);
-  } else {
-    res.send(users);
+  if (name && job) { // find by name and job
+    userService.findUserByNameAndJob(name, job)
+      .then((users) => res.send({ users_list: users }))
+      .catch((error) => res.status(500).send(error));
+  } else if (name) { // find by JUST name
+    userService.findUserByName(name)
+      .then((users) => res.send({ users_list: users }))
+      .catch((error) => res.status(500).send(error));
+  } else if (job) { // find by just job
+    userService.findUserByJob(job)
+      .then((users) => res.send({ users_list: users }))
+      .catch((error) => res.status(500).send(error));
+  } else { // All users
+    userService.getUsers()
+      .then((users) => res.send({ users_list: users }))
+      .catch((error) => res.status(500).send(error));
   }
 });
-  
-  const findUserById = (id) =>
-    users["users_list"].find((user) => user["id"] === id);
-  
-
-  //find user by ID
-  app.get("/users/:id", (req, res) => {
-    const id = req.params["id"]; 
-    let result = findUserById(id);
-    if (result === undefined) {
-      res.status(404).send("Resource not found.");
-    } else {
-      res.send(result);
-    }
-  });
-
-  const addUser = (user) => {
-    users["users_list"].push(user);
-    return user;
-  };
-
-  function generateRandomID(){
-    return Math.random().toString(36).slice(2, 8); 
-  }
-  
-  app.post("/users", (req, res) => {
-    const userToAdd = req.body;
-    userToAdd.id = generateRandomID();
-    addUser(userToAdd);
-    res.status(201).send(userToAdd);
-  });
 
 
-const deleteUserById = (id) => {
-  const index = users["users_list"].findIndex((user) => user.id === id);
-  if (index !== -1) {
-    users["users_list"].splice(index, 1); 
-    return true;
-  }
-  return false;
-};
+// post
+app.post("/users", (req, res) => {
+  const userToAdd = req.body;
+  userService.addUser(userToAdd)
+    .then((newUser) => res.status(201).send(newUser))
+    .catch((error) => res.status(500).send(error));
+});
+
+
+// delete
 app.delete("/users/:id", (req, res) => {
   const id = req.params.id;
-  const success = deleteUserById(id);
-
-  if (success) {
-    res.status(204).send(`User with ID ${id} has been deleted.`);
-  } else {
-    res.status(404).send("Resource not found.");
-  }
+  userService.deleteUserById(id)
+    .then((result) => {
+      if (result) {
+        res.status(204).send();
+      } else {
+        res.status(404).send("Resource not found.");
+      }
+    })
+    .catch((error) => res.status(500).send(error));
 });
-
-
 
 
 app.listen(port, () => {
